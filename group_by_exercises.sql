@@ -30,9 +30,10 @@ WHERE last_name LIKE '%q%' AND last_name NOT LIKE '%qu%'
 GROUP BY last_name;
 
 Find all employees with first names 'Irena', 'Vidya', or 'Maya'. Use COUNT(*) and GROUP BY to find the number of employees for each gender with those names.
-SELECT COUNT(gender)
-FROM employees
-WHERE first_name IN ('Irena', 'Vidya', 'Maya')
+SELECT COUNT(*) 
+FROM employees 
+WHERE first_name 
+IN ('Irena', 'Vidya', 'Maya') 
 GROUP BY gender;
 
 Using your query that generates a username for all of the employees, generate a count employees for each unique username.
