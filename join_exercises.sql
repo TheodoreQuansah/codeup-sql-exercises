@@ -72,16 +72,34 @@ WHERE dept_emp.to_date = '9999-01-01' AND titles.to_date = '9999-01-01'
 GROUP BY dept_name 
 ORDER BY dept_emp.dept_no ASC;
 
--- Which department has the highest average salary? Hint: Use current not historic information.
+-- Which department has the highest average salary? Hint: Use current not historic information.*
 SELECT departments.dept_name, AVG(salaries.salary) AS average_salary
 FROM employees
 JOIN dept_manager ON dept_manager.emp_no = employees.emp_no
 JOIN departments ON departments.dept_no = dept_manager.dept_no
 JOIN salaries ON salaries.emp_no = dept_manager.emp_no
 JOIN dept_emp ON dept_emp.emp_no = salaries.emp_no
-JOIN titles ON titles.emp_no = employees.emp_no
-WHERE dept_emp.to_date = '9999-01-01'
+WHERE dept_emp.to_date >= '2023-06-29'
 GROUP BY dept_name
 ORDER BY dept_name, average_salary;
 
 -- Who is the highest paid employee in the Marketing department?
+SELECT MAX(salaries.salary) AS max_salary, first_name, last_name
+FROM employees
+JOIN dept_emp ON dept_emp.emp_no = employees.emp_no
+JOIN departments ON departments.dept_no = dept_emp.dept_no
+JOIN salaries ON salaries.emp_no = dept_emp.emp_no
+WHERE departments.dept_name = 'marketing' AND dept_emp.to_date >= '2023-06-29'
+GROUP BY first_name, last_name
+ORDER BY max_salary DESC LIMIT 1;
+
+-- Which current department manager has the highest salary?
+SELECT salary, dept_name, CONCAT(employees.first_name, ' ', employees.last_name) AS Department_manager
+FROM employees
+JOIN dept_manager ON dept_manager.emp_no = employees.emp_no
+JOIN departments ON departments.dept_no = dept_manager.dept_no
+JOIN salaries ON salaries.emp_no = dept_manager.emp_no
+WHERE salaries.to_date = '9999-01-01' AND dept_manager.to_date =  '9999-01-01'
+ORDER BY salary DESC LIMIT 1;
+
+-- Determine the average salary for each department. Use all salary information and round your results.
