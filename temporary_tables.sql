@@ -10,9 +10,7 @@ ALTER TABLE employees_with_departments ADD column full_name varchar(50);
 -- Update the table so that the full_name column contains the correct data.
 UPDATE employees_with_departments 
 SET 
-    full_name = CONCAT(first_name,
-		' ', 
-        last_name);
+    full_name = CONCAT(first_name, ' ', last_name);
             
 -- Remove the first_name and last_name columns from the table.
 ALTER TABLE employees_with_departments DROP COLUMN last_name, DROP COLUMN first_name;
@@ -23,12 +21,15 @@ FROM employees.employees JOIN employees.dept_emp USING (emp_no)
 JOIN employees.departments USING (dept_no));
 
 -- Create a temporary table based on the payment table from the sakila database.
-CREATE TEMPORARY TABLE sakila_theo(SELECT * FROM sakila.payment);
+CREATE TEMPORARY TABLE sakila(SELECT cast(amount AS char(20)) AS amount, payment_id, customer_id, staff_id, rental_id, payment_date, last_update
+FROM sakila.payment);
 
 -- Write the SQL necessary to transform the amount column such that it is stored as an integer representing the number of cents of the payment. For example, 1.99 should become 199.
+UPDATE sakila 
+SET 
+    amount = REPLACE(amount, '.', '');
 
+-- Go back to the employees database. Find out how the current average pay in each department compares to the overall current pay for everyone at the company. For this comparison, you will calculate the z-score for each salary. In terms of salary, what is the best department right now to work for? The worst?   
 
-            
-
-           
+-- Error Code: 1370. execute command denied to user 'somerville_2278'@'%%' for routine 'departments.dept_name'
 
