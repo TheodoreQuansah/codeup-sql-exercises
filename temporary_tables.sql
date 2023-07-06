@@ -2,10 +2,10 @@
 USE somerville_2278;
 CREATE TEMPORARY TABLE employees_with_departments( SELECT first_name, last_name, dept_name
 FROM employees.employees JOIN employees.dept_emp USING (emp_no)
-JOIN employees.departments USING (dept_no));
+JOIN employees.departments USING (dept_no)); 
 
 -- Add a column named full_name to this table. It should be a VARCHAR whose length is the sum of the lengths of the first name and last name columns.
-ALTER TABLE employees_with_departments ADD column full_name varchar(50);
+ALTER TABLE employees_with_departments ADD column full_name varchar(31);
 
 -- Update the table so that the full_name column contains the correct data.
 UPDATE employees_with_departments 
@@ -28,8 +28,41 @@ FROM sakila.payment);
 UPDATE sakila 
 SET 
     amount = REPLACE(amount, '.', '');
+    ALTER TABLE sakila MODIFY column amount int;
+    
+SELECT 
+    *
+FROM
+    sakila;
 
 -- Go back to the employees database. Find out how the current average pay in each department compares to the overall current pay for everyone at the company. For this comparison, you will calculate the z-score for each salary. In terms of salary, what is the best department right now to work for? The worst?   
+USE employees;
+    -- Returns the current z-scores for each salary
+CREATE TEMPORARY TABLE tems_employees_with_departments(
+SELECT 
+    dept_name,
+    ((salary - (SELECT 
+            AVG(salary)
+        FROM
+            salaries
+        WHERE
+            salaries.to_date > NOW())) / (SELECT 
+            STDDEV(salary)
+        FROM
+            salaries
+        WHERE
+            salaries.to_date > NOW())) AS zscore
+FROM
+    departments
+        JOIN
+    dept_emp ON departments.dept_no = dept_emp.dept_no
+        JOIN
+    salaries ON dept_emp.emp_no = salaries.emp_no
+WHERE
+    salaries.to_date > NOW()
+GROUP BY dept_name
+ORDER BY zscore);
 
--- Error Code: 1370. execute command denied to user 'somerville_2278'@'%%' for routine 'departments.dept_name'
+
+
 
