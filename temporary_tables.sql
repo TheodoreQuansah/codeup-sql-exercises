@@ -38,31 +38,42 @@ FROM
 -- Go back to the employees database. Find out how the current average pay in each department compares to the overall current pay for everyone at the company. For this comparison, you will calculate the z-score for each salary. In terms of salary, what is the best department right now to work for? The worst?   
 USE employees;
     -- Returns the current z-scores for each salary
-CREATE TEMPORARY TABLE tems_employees_with_departments(
-SELECT 
-    dept_name,
-    ((salary - (SELECT 
-            AVG(salary)
-        FROM
-            salaries
-        WHERE
-            salaries.to_date > NOW())) / (SELECT 
-            STDDEV(salary)
-        FROM
-            salaries
-        WHERE
-            salaries.to_date > NOW())) AS zscore
-FROM
-    departments
-        JOIN
-    dept_emp ON departments.dept_no = dept_emp.dept_no
-        JOIN
-    salaries ON dept_emp.emp_no = salaries.emp_no
-WHERE
-    salaries.to_date > NOW()
-GROUP BY dept_name
-ORDER BY zscore);
+USE employees;
+    SELECT salary,
+        (salary - (SELECT AVG(salary) FROM salaries where to_date > now()))
+        /
+        (SELECT stddev(salary) FROM salaries where to_date > now()) AS zscore
+    FROM salaries
+    WHERE to_date > now();
+	-- Company table
+    CREATE TEMPORARY TABLE nikki_meyer.zscore_salaries AS (
+    SELECT AVG(salary) AS average_salary, STDDEV(salary) AS std_salary
+    FROM employees.salaries
+    WHERE to_date > CURDATE()
+    );
+    
+    SELECT * FROM nikki_meyer.zscore_salaries;
+    -- departments table
+    CREATE TEMPORARY TABLE nikki_meyer.zscore_dept_salaries AS (
+    SELECT dept_name, AVG(salary) as avg_dept_salary
+    FROM employees.salaries
+    JOIN employees.dept_emp USING (emp_no)
+    JOIN employees.departments USING (dept_no)
+    WHERE employees.salaries.to_date > CURDATE() AND employees.dept_emp.to_date > CURDATE()
+    GROUP BY dept_name
+    );
+    
+SELECT * FROM nikki_meyer.zscore_dept_salaries;
+ -- added columns for calculations
+ALTER TABLE nikki_meyer.zscore_dept_salaries ADD overall_avg FLOAT(10, 2);
+ALTER TABLE nikki_meyer.zscore_dept_salaries ADD overall_stddev FLOAT(10, 2);
+ALTER TABLE nikki_meyer.zscore_dept_salaries ADD dept_zscore FLOAT(10, 2);
 
+-- bring in values from company table
+UPDATE nikki_meyer.zscore_dept_salaries SET overall_avg = (SELECT average_salary FROM nikki_meyer.zscore_salaries);
+UPDATE nikki_meyer.zscore_dept_salaries SET overall_stddev = (SELECT std_salary FROM nikki_meyer.zscore_salaries);
+ -- calculate  score for each department
+UPDATE nikki_meyer.zscore_dept_salaries SET dept_zscore = (avg_dept_salary - overall_avg)/overall_stddev;
 
 
 
